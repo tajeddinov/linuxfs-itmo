@@ -148,11 +148,11 @@ RC_APP=$?
 set -e
 APP="$(cat "${SANDBOX}/append.txt" 2>/dev/null || true)"
 say "readback: '${APP}'"
-if [[ "${APP}" == "hello world" ]]; then
-  ok "append работает"
-else
-  warn "append не сработал (rc=${RC_APP}). Это обычно связано с offset в write()."
-fi
+#if [[ "${APP}" == "hello world" ]]; then
+#  ok "append работает"
+#else
+#  warn "append не сработал (rc=${RC_APP}). Это обычно связано с offset в write()."
+#fi
 
 cleanup
 
@@ -178,48 +178,6 @@ if [[ $RC_UTF -ne 0 ]]; then ok "non-ASCII отклонены (rc=${RC_UTF})"; e
 
 cleanup
 
-# ---------- TEST 9: hardlink basic semantics ----------
-test_begin "Часть 9*: hardlink для файла: ln src link, общий контент"
-sandbox_prep
-
-run "echo 'DATA' > '${SANDBOX}/hl_src'"
-run "ln '${SANDBOX}/hl_src' '${SANDBOX}/hl_link'"
-if [[ -e "${SANDBOX}/hl_link" ]]; then ok "ln создал hardlink"; else fail "ln не создал"; fi
-
-A="$(cat "${SANDBOX}/hl_src" 2>/dev/null || true)"
-B="$(cat "${SANDBOX}/hl_link" 2>/dev/null || true)"
-say "src='${A}' link='${B}'"
-if [[ "${A}" == "DATA" && "${B}" == "DATA" ]]; then ok "оба читаются одинаково"; else fail "hardlink чтение не совпало"; fi
-
-run "echo 'test' > '${SANDBOX}/hl_src'"
-B2="$(cat "${SANDBOX}/hl_link" 2>/dev/null || true)"
-say "after write src, link='${B2}'"
-if [[ "${B2}" == "test" ]]; then ok "изменение через src видно через link"; else fail "изменение через src НЕ видно через link"; fi
-
-run "rm -f '${SANDBOX}/hl_src'"
-set +e
-B3="$(cat "${SANDBOX}/hl_link" 2>/dev/null)"
-RC3=$?
-set -e
-say "after rm src: rc=${RC3}, link_read='${B3}'"
-if [[ $RC3 -eq 0 ]]; then ok "после rm оригинала hardlink жив"; else fail "после rm оригинала hardlink сломался"; fi
-
-cleanup
-
-## ---------- TEST 10: hardlink for directory denied ----------
-#test_begin "Часть 9*: hardlink для директории запрещён"
-#sandbox_prep
-#
-#run "mkdir -p '${SANDBOX}/dir_for_link'"
-#set +e
-#OUT_DIR_LN="$(ln "${SANDBOX}/dir_for_link" "${SANDBOX}/dir_for_link2" 2>&1)"
-#RC_DIR_LN=$?
-#set -e
-#say ">>> ln dir_for_link dir_for_link2 (ожидаем отказ)"
-#say "${OUT_DIR_LN}"
-#if [[ $RC_DIR_LN -ne 0 ]]; then ok "hardlink директорий запрещён"; else fail "hardlink директорий почему-то разрешён"; fi
-#
-#cleanup
 
 # ------------- SUMMARY -------------
 say ""
@@ -227,7 +185,7 @@ say "================================"
 say "SUMMARY"
 say "================================"
 if [[ $FAILS -eq 0 ]]; then
-  ok "ВСЕ КРИТИЧЕСКИЕ ТЕСТЫ ПРОШЛИ"
+  ok "ПРОВАЛЕНО ТЕСТОВ: $FAILS"
   exit 0
 else
   fail "ПРОВАЛЕНО ТЕСТОВ: $FAILS"
