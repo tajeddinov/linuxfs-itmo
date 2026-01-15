@@ -1,18 +1,5 @@
 #include "http.h"
 
-#include <linux/socket.h>
-#include <linux/kernel.h>
-#include <linux/net.h>
-#include <linux/in.h>
-#include <linux/types.h>
-#include <net/sock.h>
-
-#define MODULE_NAME "http"
-
-MODULE_LICENSE("GPL");
-MODULE_AUTHOR("secs-dev");
-MODULE_DESCRIPTION("A simple FS kernel module with RAM storage");
-
 const char *SERVER_IP = "0.0.0.0";
 const int SERVER_PORT = 8080;
 
@@ -111,7 +98,7 @@ int64_t parse_http_response(char *raw_response, size_t raw_response_size,
       printk(KERN_INFO "Received response with content length %d\n", length);
     }
   }
-  ++buffer;
+  ++buffer; // skip last '\n'
 
   if (length == -1) {
     return -6;
@@ -141,8 +128,8 @@ int64_t parse_http_response(char *raw_response, size_t raw_response_size,
 }
 
 int64_t vtfs_http_call(const char *token, const char *method,
-                            char *response_buffer, size_t buffer_size,
-                            size_t arg_size, ...) {
+                       char *response_buffer, size_t buffer_size,
+                       size_t arg_size, ...) {
   struct socket *sock;
   int64_t error;
 
